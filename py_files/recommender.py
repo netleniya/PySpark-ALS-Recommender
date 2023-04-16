@@ -1,9 +1,5 @@
-import pandas as pd
-
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql import functions as F
-from pyspark.sql.types import IntegerType, StringType
-from pyspark.ml.recommendation import ALS, ALSModel
+from pyspark.ml.recommendation import ALSModel
 
 
 def load_model() -> ALSModel:
