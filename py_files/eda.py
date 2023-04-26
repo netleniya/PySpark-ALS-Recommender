@@ -1,6 +1,7 @@
-import os
 import dask.dataframe as ddf
 import pandas as pd
+
+from pathlib import Path
 
 
 class DaskEDA:
@@ -12,20 +13,20 @@ class DaskEDA:
         return ddf.read_csv(file_path, **kwargs).compute()
 
 
-def main():
-    root_path = "../dossier"
-    books_path = os.path.join(root_path, "")
-    rates_path = os.path.join(root_path, "../archive/Ratings.csv")
+def main() -> None:
+    root_path = Path().cwd()
+    books_path = root_path / "dossier"
+    rates_path = root_path / "archive/Ratings.csv"
 
-
-    book_files = [file.path for file in os.scandir(books_path) if file.is_file()]
+    book_files = list(books_path.glob(pattern="*.csv"))
 
     dask_obj = DaskEDA()
 
     books_raw = dask_obj.read_files(
         book_files,
         usecols=["isbn", "isbn13", "title", "authors", "language", "publisher"],
-        dtype={"isbn": "object"})
+        dtype={"isbn": "object"},
+    )
 
     ratings = dask_obj.read_files(rates_path)
 
@@ -34,7 +35,17 @@ def main():
 
     ratings_books = ratings.query("book_rating !=0").merge(books_raw, on=["isbn"])
     ratings_books = ratings_books.loc[
-                    :, ["user_id", "isbn13", "title", "authors", "publisher", "language", "book_rating"]]
+        :,
+        [
+            "user_id",
+            "isbn13",
+            "title",
+            "authors",
+            "publisher",
+            "language",
+            "book_rating",
+        ],
+    ]
 
     freq = ratings_books["title"].value_counts()
     freq_review = freq[freq > 10].index
@@ -42,7 +53,9 @@ def main():
     books_df = ratings_books[ratings_books["title"].isin(freq_review)]
     books_df.loc[books_df["language"] == "en_US", "language"] = "en"
 
-    minor_lang = books_df.loc[(books_df["language"] == "ru") | (books_df["language"] == "hi")].index
+    minor_lang = books_df.loc[
+        (books_df["language"] == "ru") | (books_df["language"] == "hi")
+    ].index
     books_df = books_df.drop(minor_lang, axis=0)
 
     usr_freq = books_df["user_id"].value_counts()
@@ -57,7 +70,9 @@ def main():
     books_df["bookId"] = books_df.isbn13.cat.codes
 
     books_df = books_df.rename(columns={"book_rating": "rating"})
-    clean_df = books_df.loc[:, ["userId", "bookId", "isbn13", "title", "language", "rating"]]
+    clean_df = books_df.loc[
+        :, ["userId", "bookId", "isbn13", "title", "language", "rating"]
+    ]
     clean_df.to_parquet("outputs/work_df", index=True)
 
 
