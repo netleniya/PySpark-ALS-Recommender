@@ -2,9 +2,11 @@ from pathlib import Path
 
 import pandas as pd
 
-user_files = Path(__file__).cwd()/ "outputs" / "recommend_books"
-book_files = Path(__file__).cwd()/ "outputs" / "recommend_readers"
-working_df = Path(__file__).cwd()/ "outputs" / "work_df"
+basedir = Path(__file__).parent
+
+user_files = basedir.joinpath("outputs", "recommend_books")
+book_files = basedir.joinpath("outputs", "recommend_readers")
+working_df = basedir.joinpath("outputs", "work_df")
 
 user_recs = pd.read_parquet(user_files)
 book_recs = pd.read_parquet(book_files)
