@@ -1,22 +1,35 @@
-import os
 import pandas as pd
+from pathlib import Path
 
 
-user_recs = pd.read_parquet(os.path.join("outputs", "recommend_books"))
-book_recs = pd.read_parquet(os.path.join("outputs", "recommend_readers"))
+user_files = Path(__file__).cwd() / "py_files" / "outputs" / "recommend_books"
+book_files = Path(__file__).cwd() / "py_files" / "outputs" / "recommend_readers"
+working_df = Path(__file__).cwd() / "py_files" / "outputs" / "work_df"
 
-database = pd.read_parquet(os.path.join("outputs", "work_df")).reset_index(drop=True)
+user_recs = pd.read_parquet(user_files)
+book_recs = pd.read_parquet(book_files)
+database = pd.read_parquet(working_df)
 
 
 def recommend_books_to_readers(user_id: int) -> pd.DataFrame:
     df = database.merge(user_recs, on=["bookId"], how="left")
     print(f"Book recommendations for user with id {user_id}:")
-    return df[df["targetId"] == user_id][["title", "isbn13", "language"]].drop_duplicates(keep='first')
+    return df[df["targetId"] == user_id][
+        ["title", "isbn13", "language"]
+    ].drop_duplicates(keep="first")
 
 
 def recommend_readers_for_book(isbn: int) -> pd.DataFrame:
-    df = database[database["isbn13"] == isbn].merge(book_recs, on=["bookId"]).drop_duplicates(["targetId"])
-    print("Recommend: ",df.title.drop_duplicates().to_string(index=False, header=False), "to the following users")
+    df = (
+        database[database["isbn13"] == isbn]
+        .merge(book_recs, on=["bookId"])
+        .drop_duplicates(["targetId"])
+    )
+    print(
+        "Recommend: ",
+        df.title.drop_duplicates().to_string(index=False, header=False),
+        "to the following users",
+    )
     return df[["targetId"]]
 
 
