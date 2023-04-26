@@ -1,10 +1,10 @@
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 
-user_files = Path(__file__).cwd() / "py_files" / "outputs" / "recommend_books"
-book_files = Path(__file__).cwd() / "py_files" / "outputs" / "recommend_readers"
-working_df = Path(__file__).cwd() / "py_files" / "outputs" / "work_df"
+user_files = Path(__file__).cwd()/ "outputs" / "recommend_books"
+book_files = Path(__file__).cwd()/ "outputs" / "recommend_readers"
+working_df = Path(__file__).cwd()/ "outputs" / "work_df"
 
 user_recs = pd.read_parquet(user_files)
 book_recs = pd.read_parquet(book_files)
@@ -27,7 +27,7 @@ def recommend_readers_for_book(isbn: int) -> pd.DataFrame:
     )
     print(
         "Recommend: ",
-        df.title.drop_duplicates().to_string(index=False, header=False),
+        df.title.drop_duplicates().to_string(index=False, header=False), # type: ignore
         "to the following users",
     )
     return df[["targetId"]]
