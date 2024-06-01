@@ -3,7 +3,11 @@ from pyspark.ml.recommendation import ALSModel
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
-spark = SparkSession.builder.appName("Group7").config("spark.driver.memory", "4g").getOrCreate()
+spark = (
+    SparkSession.builder.appName("Group7")
+    .config("spark.driver.memory", "4g")
+    .getOrCreate()
+)
 
 
 def generate_book_recommendations(model):
