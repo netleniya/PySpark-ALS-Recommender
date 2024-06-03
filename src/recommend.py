@@ -1,13 +1,5 @@
 from pandas import DataFrame
-from pyspark.ml.recommendation import ALSModel
-from pyspark.sql import SparkSession
 from abc import ABC, abstractmethod
-
-spark = (
-    SparkSession.builder.appName("Book Recommender")
-    .config("spark.driver.memory", "4g")
-    .getOrCreate()
-)
 
 
 class Recommender(ABC):
@@ -22,21 +14,9 @@ class Recommender(ABC):
 
 
 class BookRecommender(Recommender):
-    def __init__(self, database: DataFrame, model: ALSModel, num_recs: int) -> None:
+    def __init__(self, database: DataFrame, user_recs) -> None:
         super().__init__(database)
-        self.model = model
-        self.user_recs = model.recommendForAllUsers(num_recs)
-
-        self.user_recs.createTempView("ALS_recs_temp")
-        query = """
-        SELECT
-            userId AS targetId,
-            bookIds_and_ratings.bookId,
-            bookIds_and_ratings.rating AS prediction
-        FROM ALS_recs_temp
-        LATERAL VIEW explode(recommendations) exploded_table
-        AS bookIds_and_ratings
-        """
+        self.user_recs = user_recs
 
     def recommend(self, id: int) -> DataFrame:
         df = self.database.merge(self.user_recs, on=["bookId"], how="left")
@@ -47,7 +27,7 @@ class BookRecommender(Recommender):
 
 
 class ReaderRecommender(Recommender):
-    def __init__(self, database: DataFrame) -> None:
+    def __init__(self, database: DataFrame, book_recs) -> None:
         super().__init__(database)
         self.book_recs = book_recs
 
