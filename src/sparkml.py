@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from pathlib import Path
+
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col
 
@@ -10,15 +12,16 @@ from pyspark.ml.evaluation import RegressionEvaluator
 
 spark = (
     SparkSession.builder.appName("Book Recommender")
-    .config("spark.driver.memoery", "8g")
+    .config("spark.driver.memory", "8g")
     .getOrCreate()
 )
 
 
 def create_dataframe() -> DataFrame:
 
-    filepath = os.path.join("outputs", "work_df")
-    spark_df = spark.read.parquet(filepath)
+    filepath = Path().cwd().joinpath("data", "processed", "clean_df")
+    file = os.path.realpath(filename=filepath)
+    spark_df = spark.read.parquet(file)
     colMap = {
         "userId": col("userId").cast("int"),
         "bookId": col("bookId").cast("int"),

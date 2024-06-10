@@ -29,7 +29,7 @@ def recommend_readers_for_book(isbn: int) -> pd.DataFrame:
     )
     print(
         "Recommend: ",
-        df.title.drop_duplicates().to_string(index=False, header=False), # type: ignore
+        df.title.drop_duplicates().to_string(index=False, header=False),  # type: ignore
         "to the following users",
     )
     return df[["targetId"]]
