@@ -13,8 +13,8 @@ class DaskEDA:
 
 
 def clean_data() -> None:
-    root_path = Path().cwd()
-    books_path = root_path / "data/raw/dossier"
+    root_path = Path().cwd().parent
+    books_path = root_path / "data/raw/dossier/"
     rates_path = root_path / "data/raw/Ratings.csv"
 
     book_files = list(books_path.glob(pattern="*.csv"))
@@ -71,6 +71,15 @@ def clean_data() -> None:
 
     books_df = books_df[books_df["user_id"].isin(freq_usr)]
 
+    grouped = books_df.groupby("title")[["book_rating"]].agg(
+        {"book_rating": [("num_ratings", "count")]}
+    )
+    grouped.columns = grouped.columns.droplevel()
+    grouped = grouped.reset_index().sort_values(by="num_ratings", ascending=False)
+    grouped = grouped.query("num_ratings >= 10")
+
+    books_df = books_df[books_df["title"].isin(grouped["title"])]
+
     books_df.user_id = pd.Categorical(books_df.user_id)
     books_df["userId"] = books_df.user_id.cat.codes
 
@@ -85,3 +94,6 @@ def clean_data() -> None:
     filepath = Path().cwd().parent.joinpath("data", "processed", "clean_df")
     clean_df.to_parquet(filepath, index=False)
     print("Cleaned data saved to disk")
+
+
+clean_data()
