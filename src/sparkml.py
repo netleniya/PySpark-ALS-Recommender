@@ -12,14 +12,14 @@ from pyspark.ml.evaluation import RegressionEvaluator
 
 spark = (
     SparkSession.builder.appName("Book Recommender")
-    .config("spark.driver.memory", "8g")
+    .config("spark.driver.memory", "4g")
     .getOrCreate()
 )
 
 
 def create_dataframe() -> DataFrame:
 
-    filepath = Path().cwd().joinpath("data", "processed", "clean_df")
+    filepath = Path(__file__).parents[1].joinpath("data", "processed", "clean_df")
     file = os.path.realpath(filename=filepath)
     spark_df = spark.read.parquet(file)
     colMap = {
