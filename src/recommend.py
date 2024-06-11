@@ -7,7 +7,7 @@ from pyspark.ml.recommendation import ALSModel
 class Recommender(ABC):
     spark = (
         SparkSession.builder.appName("Group7 Recommender")
-        .config("spark.driver.memory", "4g")
+        .config("spark.driver.memory", "6g")
         .getOrCreate()
     )
 
