@@ -71,5 +71,5 @@ class UserRecommender(Recommender):
         LATERAL VIEW explode(recommendations) exploded_table
         AS bookIds_and_userIds
         """
-        clean_recs = self.spark.sql(query)
-        return clean_recs.toPandas()
+        clean_recs = self.spark.sql(query).toPandas()
+        return clean_recs
