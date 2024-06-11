@@ -3,6 +3,8 @@ from pathlib import Path
 import dask.dataframe as ddf
 import pandas as pd
 
+pd.options.mode.copy_on_write = True
+
 
 class DaskEDA:
     def __int__(self) -> None: ...
@@ -13,7 +15,7 @@ class DaskEDA:
 
 
 def clean_data() -> None:
-    root_path = Path().cwd().parent
+    root_path = Path(__file__).cwd().parent
     books_path = root_path / "data/raw/dossier/"
     rates_path = root_path / "data/raw/Ratings.csv"
 
@@ -42,18 +44,18 @@ def clean_data() -> None:
 
     ratings_books = ratings.query("book_rating !=0").merge(books_raw, on=["isbn"])
     ratings_books = ratings_books.loc[
-        :,
-        [
-            "user_id",
-            "isbn13",
-            "title",
-            "authors",
-            "publisher",
-            "language",
-            "image",
-            "book_rating",
-        ],
-    ]
+                    :,
+                    [
+                        "user_id",
+                        "isbn13",
+                        "title",
+                        "authors",
+                        "publisher",
+                        "language",
+                        "image",
+                        "book_rating",
+                    ],
+                    ]
 
     freq = ratings_books["title"].value_counts()
     freq_review = freq[freq > 10].index
@@ -63,7 +65,7 @@ def clean_data() -> None:
 
     minor_lang = books_df.loc[
         (books_df["language"] == "ru") | (books_df["language"] == "hi")
-    ].index
+        ].index
     books_df = books_df.drop(minor_lang, axis=0)
 
     usr_freq = books_df["user_id"].value_counts()
@@ -80,20 +82,18 @@ def clean_data() -> None:
 
     books_df = books_df[books_df["title"].isin(grouped["title"])]
 
-    books_df.user_id = pd.Categorical(books_df.user_id)
-    books_df["userId"] = books_df.user_id.cat.codes
-
-    books_df.isbn13 = pd.Categorical(books_df.isbn13)
-    books_df["bookId"] = books_df.isbn13.cat.codes
+    books_df.loc[:, "userId"] = books_df.user_id.astype("category").cat.codes
+    books_df.loc[:, "bookId"] = books_df.isbn13.astype("category").cat.codes
 
     books_df = books_df.rename(columns={"book_rating": "rating"})
     clean_df = books_df.loc[
-        :, ["userId", "bookId", "isbn13", "title", "language", "image", "rating"]
-    ]
+               :, ["userId", "bookId", "isbn13", "title", "language", "image", "rating"]
+               ]
 
     filepath = Path().cwd().parent.joinpath("data", "processed", "clean_df")
     clean_df.to_parquet(filepath, index=False)
-    print("Cleaned data saved to disk")
+
+    print(f"Parquet saved to {filepath}")
 
 
 if __name__ == "__main__":
