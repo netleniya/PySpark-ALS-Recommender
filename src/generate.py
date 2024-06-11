@@ -11,7 +11,7 @@ class DataFrameGenerator(ABC):
         ...
 
 
-class BooksDataFrameGenerator(DataFrameGenerator):
+class GenerateBookList(DataFrameGenerator):
     def __init__(self, database: DataFrame, user_recs) -> None:
         super().__init__(database)
         self.user_recs = user_recs
@@ -24,7 +24,7 @@ class BooksDataFrameGenerator(DataFrameGenerator):
         ].drop_duplicates(keep="first")
 
 
-class ReadersDataFrameGenerator(DataFrameGenerator, ABC):
+class GenerateUsersList(DataFrameGenerator, ABC):
     def __init__(self, database: DataFrame, book_recs) -> None:
         super().__init__(database)
         self.book_recs = book_recs
