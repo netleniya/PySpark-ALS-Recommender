@@ -20,6 +20,10 @@ class Recommender(ABC):
     @abstractmethod
     def recommend(self, num_recommendations: int) -> DataFrame: ...
 
+    def __del__(self):
+        self.spark.stop()
+        print("Spark session stopped.")
+
 
 class BookRecommender(Recommender):
 
