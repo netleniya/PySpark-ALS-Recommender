@@ -7,7 +7,7 @@ from pyspark.ml.recommendation import ALSModel
 class Recommender(ABC):
     spark = (
         SparkSession.builder.appName("Group7 Recommender")
-        .config("spark.driver.memory", "8g")
+        .config("spark.driver.memory", "4g")
         .getOrCreate()
     )
 
@@ -20,10 +20,6 @@ class Recommender(ABC):
     @abstractmethod
     def recommend(self, num_recommendations: int) -> DataFrame: ...
 
-    def __del__(self):
-        self.spark.stop()
-        print("Spark session stopped.")
-
 
 class BookRecommender(Recommender):
 
@@ -31,8 +27,13 @@ class BookRecommender(Recommender):
         super().__init__(local_model=self.model, spark_session=self.spark)
 
     def recommend(self, num_recommendations: int) -> DataFrame:
+        """
+        Recommend N books for all users
+        :param num_recommendations:
+        :return:
+        """
         user_recs = self.model.recommendForAllUsers(num_recommendations)
-        user_recs.createTempView("ALS_recs_temp")
+        user_recs.createOrReplaceTempView("ALS_recs_temp")
 
         query = """
         SELECT
@@ -43,7 +44,7 @@ class BookRecommender(Recommender):
         LATERAL VIEW explode(recommendations) exploded_table
         AS bookIds_and_ratings
         """
-        clean_recs = self.spark.sql(query)
+        clean_recs = self.spark.sql(query).toPandas()
         return clean_recs
 
 
@@ -53,8 +54,13 @@ class UserRecommender(Recommender):
         super().__init__(local_model=self.model, spark_session=self.spark)
 
     def recommend(self, num_recommendations: int) -> DataFrame:
+        """
+        Recommend N users for all books
+        :param num_recommendations:
+        :return:
+        """
         book_recs = self.model.recommendForAllItems(num_recommendations)
-        book_recs.createTempView("ALS_books_temp")
+        book_recs.createOrReplaceTempView("ALS_books_temp")
 
         query = """
         SELECT
