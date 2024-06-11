@@ -41,40 +41,63 @@ def get_user_recommendations(book_id, num_recs) -> pd.DataFrame:
 
 def main() -> None:
 
-    book_rec = gr.Interface(
-        fn=get_book_recommendations,
-        inputs=[
-            gr.Number(label="User ID"),
-            gr.Number(label="Number of recommendations"),
-        ],
-        outputs=[
-            gr.DataFrame(
+    with gr.Blocks() as demo:
+        gr.Markdown(
+            """
+            # <h1 style="text-align: center;">Book Recommender in PySpark </h1>
+
+            Welcome to Collaborative filtering Book Recommender. 
+
+            You can use the two tabs to get recommendations for a user or a book.
+            - Use the `Book Recommender` tab to generate a list recommendations for a user.
+            - Use the `User Recommender` tab to generate a list of users that may be interested in a book (NB: This is buggy and slow ATM).
+            """
+        )
+
+        with gr.Tab("Book Recommender"):
+            gr.Markdown("Enter the user ID and number of recommendations")
+            usr_inp = gr.Number(label="User ID")
+            num_inp = gr.Slider(
+                label="Number of recommendations",
+                minimum=1,
+                maximum=10,
+                step=1,
+                interactive=True,
+            )
+            usr_df = gr.DataFrame(
                 label="Recommended Books",
+                headers=["Book ID", "Title", "Language"],
                 col_count=(3, "fixed"),
-            ),
-        ],
-        title="Book Recommender",
-    )
+            )
+            usr_btn = gr.Button("Recommend")
 
-    user_rec = gr.Interface(
-        fn=get_user_recommendations,
-        inputs=[
-            gr.Number(label="Book ID"),
-            gr.Number(label="Number of recommendations"),
-        ],
-        outputs=[
-            gr.DataFrame(
+        with gr.Tab("User Recommender"):
+            gr.Markdown(
+                "Enter the Book ID and number of users to recommend the book to"
+            )
+            book_inp = gr.Number(label="Book ID")
+            num_recs = gr.Slider(
+                label="Number of recommendations",
+                minimum=1,
+                maximum=10,
+                step=1,
+                interactive=True,
+            )
+            book_out = gr.DataFrame(
                 label="Recommended Users",
-                col_count=(3, "fixed"),
-            ),
-        ],
-        title="User Recommender",
-    )
+                headers=["User ID"],
+                col_count=(1, "fixed"),
+            )
+            book_btn = gr.Button("Recommend")
 
-    interface = gr.TabbedInterface(
-        [book_rec, user_rec], ["Book Recommender", "User Recommender"]
-    )
-    interface.launch()
+        usr_btn.click(
+            get_book_recommendations, inputs=[usr_inp, num_inp], outputs=usr_df
+        )
+        book_btn.click(
+            get_user_recommendations, inputs=[book_inp, num_recs], outputs=book_out
+        )
+
+    demo.launch()
 
 
 if __name__ == "__main__":
