@@ -7,8 +7,7 @@ class DataFrameGenerator(ABC):
         self.database = database
 
     @abstractmethod
-    def generate_dataframe(self, field_id: int) -> DataFrame:
-        ...
+    def generate_dataframe(self, field_id: int) -> DataFrame: ...
 
 
 class GenerateBookList(DataFrameGenerator):
@@ -18,7 +17,7 @@ class GenerateBookList(DataFrameGenerator):
 
     def generate_dataframe(self, user_id: int) -> DataFrame:
         df = self.database.merge(self.user_recs, on=["bookId"], how="left")
-        print(f"Book recommendations for user with id {user_id}:")
+        # print(f"Book recommendations for user with id {user_id}:")
         return df[df["targetId"] == user_id][
             ["title", "isbn13", "language", "image"]
         ].drop_duplicates(keep="first")
@@ -35,9 +34,9 @@ class GenerateUsersList(DataFrameGenerator, ABC):
             .merge(self.book_recs, on=["bookId"])
             .drop_duplicates(["targetId"])
         )
-        print(
-            "Recommend: ",
-            df.title.drop_duplicates().to_string(index=False, header=False),  # type: ignore
-            "to the following users",
-        )
+        # print(
+        #     "Recommend: ",
+        #     df.title.drop_duplicates().to_string(index=False, header=False),  # type: ignore
+        #     "to the following users",
+        # )
         return df[["targetId"]]
