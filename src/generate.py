@@ -28,9 +28,9 @@ class GenerateUsersList(DataFrameGenerator, ABC):
         super().__init__(database)
         self.book_recs = book_recs
 
-    def generate_dataframe(self, isbn: int) -> DataFrame:
+    def generate_dataframe(self, book_id: int) -> DataFrame:
         df = (
-            self.database[self.database["isbn13"] == isbn]
+            self.database[self.database["bookId"] == book_id]
             .merge(self.book_recs, on=["bookId"])
             .drop_duplicates(["targetId"])
         )
