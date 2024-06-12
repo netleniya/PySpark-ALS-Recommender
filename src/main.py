@@ -32,9 +32,18 @@ def get_user_recommendations(book_id, num_recs) -> pd.DataFrame:
     try:
         rec_obj = UserRecommender().recommend(num_recommendations=num_recs)
         gen_obj = GenerateUsersList(book_libray, rec_obj).generate_dataframe(
-            isbn=book_id
+            book_id=book_id
         )
         return gen_obj
+    except ValueError as e:
+        print(f"No recommendations for {book_id} or Book not found")
+
+
+def get_book_details(book_id) -> pd.DataFrame:
+    try:
+        return book_libray[book_libray["bookId"] == book_id][
+            ["isbn13", "title", "language", "image"]
+        ].drop_duplicates(keep="first")
     except ValueError as e:
         print(f"No recommendations for {book_id} or Book not found")
 
@@ -83,6 +92,12 @@ def main() -> None:
                 step=1,
                 interactive=True,
             )
+            book_details = gr.DataFrame(
+                label="Book Details",
+                headers=["ISBN", "Title", "Language"],
+                col_count=(3, "fixed"),
+            )
+            details_btn = gr.Button("Get Book Details")
             book_out = gr.DataFrame(
                 label="Recommended Users",
                 headers=["User ID"],
@@ -93,8 +108,12 @@ def main() -> None:
         usr_btn.click(
             get_book_recommendations, inputs=[usr_inp, num_inp], outputs=usr_df
         )
+        details_btn.click(get_book_details, inputs=[book_inp], outputs=book_details)
+
         book_btn.click(
-            get_user_recommendations, inputs=[book_inp, num_recs], outputs=book_out
+            get_user_recommendations,
+            inputs=[book_inp, num_recs],
+            outputs=[book_out],
         )
 
     demo.launch()
